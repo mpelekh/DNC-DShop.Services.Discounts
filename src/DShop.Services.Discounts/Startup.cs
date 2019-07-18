@@ -22,7 +22,7 @@ namespace DShop.Services.Discounts
     public class Startup
     {
         public IConfiguration Configuration { get; }
-        public IContainer Container { get; }
+        public IContainer Container { get; private set; }
 
         public Startup(IConfiguration configuration)
         {
@@ -41,6 +41,8 @@ namespace DShop.Services.Discounts
             builder.AddDispatchers();
             builder.AddMongo();
             builder.AddMongoRepository<Discount>("Discounts");
+            
+            Container = builder.Build();
             
             return new AutofacServiceProvider(Container);
         }

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using DShop.Common;
 using DShop.Common.Dispatchers;
 using DShop.Common.Mongo;
 using Microsoft.AspNetCore.Builder;
@@ -47,13 +48,15 @@ namespace DShop.Services.Discounts
             return new AutofacServiceProvider(Container);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env,
+            IApplicationLifetime applicationLifetime, IStartupInitializer initializer)
         {
             if (env.IsDevelopment() || env.EnvironmentName == "local")
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            initializer.InitializeAsync();
             app.UseMvc();
 
             applicationLifetime.ApplicationStopped.Register(() => Container.Dispose());

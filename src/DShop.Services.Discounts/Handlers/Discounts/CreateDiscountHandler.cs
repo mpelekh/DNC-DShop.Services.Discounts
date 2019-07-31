@@ -3,6 +3,7 @@ using DShop.Common.Handlers;
 using DShop.Common.RabbitMq;
 using DShop.Services.Discounts.Domain;
 using DShop.Services.Discounts.Messages.Commands;
+using DShop.Services.Discounts.Messages.Events;
 using DShop.Services.Discounts.Repositories;
 
 namespace DShop.Services.Discounts.Handlers.Discounts
@@ -10,16 +11,21 @@ namespace DShop.Services.Discounts.Handlers.Discounts
     public class CreateDiscountHandler : ICommandHandler<CreateDiscount>
     {
         private readonly IDiscountsRepository _discountsRepository;
+        private readonly IBusPublisher _busPublisher;
         
-        public CreateDiscountHandler(IDiscountsRepository discountsRepository)
+        public CreateDiscountHandler(IDiscountsRepository discountsRepository,
+            IBusPublisher busPublisher)
         {
             _discountsRepository = discountsRepository;
+            _busPublisher = busPublisher;
         }
         public async Task HandleAsync(CreateDiscount command, ICorrelationContext context)
         {
             var discount = new Discount(command.Id, command.CustomerId,
                 command.Code, command.Percentage);
             await _discountsRepository.AddAsync(discount);
+            await _busPublisher.PublishAsync(new DiscountCreated(command.Id,
+                command.CustomerId, command.Code, command.Percentage), context);
         }
     }
 }

@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DShop.Common.Dispatchers;
 using DShop.Common.Mvc;
+using DShop.Services.Discounts.Dto;
 using DShop.Services.Discounts.Messages.Commands;
+using DShop.Services.Discounts.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DShop.Services.Discounts.Controllers
@@ -16,6 +19,10 @@ namespace DShop.Services.Discounts.Controllers
         {
             _dispatcher = dispatcher;
         }
+        
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DiscountDto>>> Get([FromQuery] FindDiscounts query)
+            => Ok(await _dispatcher.QueryAsync(query));
 
         [HttpPost]
         public async Task<ActionResult> Post(CreateDiscount command)

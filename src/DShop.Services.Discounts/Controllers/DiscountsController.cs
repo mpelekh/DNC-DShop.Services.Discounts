@@ -24,6 +24,19 @@ namespace DShop.Services.Discounts.Controllers
         public async Task<ActionResult<IEnumerable<DiscountDto>>> Get([FromQuery] FindDiscounts query)
             => Ok(await _dispatcher.QueryAsync(query));
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<DiscountDetailsDto>> Get([FromRoute] GetDiscount query)
+        {
+            var discount = await _dispatcher.QueryAsync(query);
+
+            if (discount is null)
+            {
+                return NotFound();
+            }
+
+            return discount;
+        }
+
         [HttpPost]
         public async Task<ActionResult> Post(CreateDiscount command)
         {

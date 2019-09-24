@@ -19,9 +19,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using DShop.Common.Mvc;
 using DShop.Common.RabbitMq;
+using DShop.Common.RestEase;
 using DShop.Services.Discounts.Domain;
 using DShop.Services.Discounts.Messages.Commands;
 using DShop.Services.Discounts.Messages.Events;
+using DShop.Services.Discounts.Services;
 
 namespace DShop.Services.Discounts
 {
@@ -40,6 +42,7 @@ namespace DShop.Services.Discounts
             services.AddCustomMvc();
             services.AddInitializers(typeof(IMongoDbInitializer));
             services.AddConsul();
+            services.RegisterServiceForwarder<IOrdersService>("orders-service");
             
             var builder = new ContainerBuilder();
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())

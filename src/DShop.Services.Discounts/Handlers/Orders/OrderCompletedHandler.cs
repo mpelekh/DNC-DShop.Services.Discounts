@@ -4,21 +4,22 @@ using DShop.Common.Handlers;
 using DShop.Common.RabbitMq;
 using DShop.Services.Discounts.Dto;
 using DShop.Services.Discounts.Messages.Events;
+using DShop.Services.Discounts.Services;
 
 namespace DShop.Services.Discounts.Handlers.Orders
 {
     public class OrderCompletedHandler : IEventHandler<OrderCompleted>
     {
-        private readonly IConsulHttpClient _consulHttpClient;
+        private readonly IOrdersService _ordersService;
 
-        public OrderCompletedHandler(IConsulHttpClient consulHttpClient)
+        public OrderCompletedHandler(IOrdersService ordersService)
         {
-            _consulHttpClient = consulHttpClient;
+            _ordersService = ordersService;
         }
         public async Task HandleAsync(OrderCompleted @event, ICorrelationContext context)
         {
-            var orderDto = await _consulHttpClient
-                .GetAsync<OrderDetailsDto>($"orders-service/orders/{@event.Id}");
+            var orderDto = await _ordersService
+                .GetAsync(@event.Id);
             
             await Task.CompletedTask;
         }

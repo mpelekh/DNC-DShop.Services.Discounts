@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Consul;
 using DShop.Common;
+using DShop.Common.Consul;
 using DShop.Common.Dispatchers;
 using DShop.Common.Mongo;
 using Microsoft.AspNetCore.Builder;
@@ -37,6 +39,7 @@ namespace DShop.Services.Discounts
         {
             services.AddCustomMvc();
             services.AddInitializers(typeof(IMongoDbInitializer));
+            services.AddConsul();
             
             var builder = new ContainerBuilder();
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
@@ -54,7 +57,8 @@ namespace DShop.Services.Discounts
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env,
-            IApplicationLifetime applicationLifetime, IStartupInitializer initializer)
+            IApplicationLifetime applicationLifetime, IStartupInitializer initializer,
+            IConsulClient consulClient)
         {
             if (env.IsDevelopment() || env.EnvironmentName == "local")
             {
@@ -65,9 +69,15 @@ namespace DShop.Services.Discounts
             app.UseMvc();
             app.UseRabbitMq()
                 .SubscribeCommand<CreateDiscount>()
-                .SubscribeEvent<CustomerCreated>();
+                .SubscribeEvent<CustomerCreated>()
+                .SubscribeEvent<OrderCompleted>();
+            var serviceId = app.UseConsul();
 
-            applicationLifetime.ApplicationStopped.Register(() => Container.Dispose());
+            applicationLifetime.ApplicationStopped.Register(() =>
+            {
+                consulClient.Agent.ServiceDeregister(serviceId);
+                Container.Dispose();
+            });
         }
     }
 }

@@ -18,7 +18,7 @@ namespace DShop.Services.Discounts.Handlers.Discounts
         
         public CreateDiscountHandler(IDiscountsRepository discountsRepository,
             ICustomerRepository customerRepository,
-            IBusPublisher busPublisher, ILogger<CreateDiscountHandler> logger)
+            IBusPublisher busPublisher, ILogger<CreateDiscountHandler> logger)  
         {
             _discountsRepository = discountsRepository;
             _customerRepository = customerRepository;
@@ -31,6 +31,9 @@ namespace DShop.Services.Discounts.Handlers.Discounts
             if (customer is null)
             {
                 _logger.LogWarning($"Customer with id: '{command.CustomerId}' was not found.");
+                await _busPublisher.PublishAsync(new CreateDiscountRejected(command.CustomerId,
+                    $"Customer with id: '{command.CustomerId}' was not found",
+                    "customer_not_found"), context);
                 
                 return;
             }
